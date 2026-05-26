@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
+from app.api import projects as projects_api
+from app.api import resources as resources_api
 from app.db.base import engine
 
 app = FastAPI(title="Noted", version="0.0.1")
@@ -25,3 +27,7 @@ def health():
     except Exception:
         db_ok = False
     return {"status": "ok", "db": db_ok}
+
+
+app.include_router(projects_api.router)
+app.include_router(resources_api.router)

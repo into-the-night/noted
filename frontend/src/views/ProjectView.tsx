@@ -1,13 +1,37 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { I } from "../lib/icons";
-import { PROJECTS, RESOURCES } from "../lib/mocks";
+import { api, Resource } from "../lib/api";
+import { UploadModal } from "../components/UploadModal";
 
-type Props = { projectId: string; onOpenResource: (id: string) => void; onUpload: () => void };
+type Props = { projectId: string; onOpenResource: (id: string) => void };
 
-export function ProjectView({ projectId, onOpenResource, onUpload }: Props) {
-  const project = PROJECTS.find((p) => p.id === projectId) ?? PROJECTS[0];
+export function ProjectView({ projectId, onOpenResource }: Props) {
+  const qc = useQueryClient();
   const [tab, setTab] = useState<"resources" | "revision" | "lists">("resources");
-  const resources = RESOURCES.filter((r) => r.projectId === project.id);
+  const [showUpload, setShowUpload] = useState(false);
+
+  const { data: project } = useQuery({
+    queryKey: ["project", projectId],
+    queryFn: () => api.getProject(projectId),
+  });
+  const { data: resources = [] } = useQuery({
+    queryKey: ["resources", projectId],
+    queryFn: () => api.listResources(projectId),
+  });
+
+  // Poll while anything is still ingesting
+  const anyIngesting = resources.some(
+    (r) => r.ingestion_status === "queued" || r.ingestion_status === "processing"
+  );
+  useEffect(() => {
+    if (!anyIngesting) return;
+    const t = setInterval(
+      () => qc.invalidateQueries({ queryKey: ["resources", projectId] }),
+      1500
+    );
+    return () => clearInterval(t);
+  }, [anyIngesting, projectId, qc]);
 
   return (
     <div className="view-fade" style={{ flex: 1, overflowY: "auto" }}>
@@ -15,20 +39,31 @@ export function ProjectView({ projectId, onOpenResource, onUpload }: Props) {
         <div style={{ padding: "40px 56px 0" }}>
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 30, marginBottom: 24 }}>
             <div style={{ flex: 1 }}>
-              <div className="mono" style={{ fontSize: 10.5, letterSpacing: "0.08em", color: "var(--muted)", textTransform: "uppercase", marginBottom: 10 }}>
-                Project · last opened {project.lastSeen}
+              <div
+                className="mono"
+                style={{
+                  fontSize: 10.5,
+                  letterSpacing: "0.08em",
+                  color: "var(--muted)",
+                  textTransform: "uppercase",
+                  marginBottom: 10,
+                }}
+              >
+                Project
               </div>
-              <h1 style={{ fontSize: 38, fontWeight: 600, margin: 0, color: "var(--ink)", letterSpacing: "-0.022em", lineHeight: 1.1 }}>{project.name}</h1>
+              <h1 style={{ fontSize: 38, fontWeight: 600, margin: 0, color: "var(--ink)", letterSpacing: "-0.022em", lineHeight: 1.1 }}>
+                {project?.name ?? "…"}
+              </h1>
             </div>
-            <button onClick={onUpload} style={btnPrimary}>
-              <I.plus width={14} height={14} /> Add resource
+            <button onClick={() => setShowUpload(true)} style={btnPrimary}>
+              <I.plus width={14} height={14} /> Add PDF
             </button>
           </div>
 
           <div style={{ display: "flex", gap: 4, borderBottom: "1px solid var(--border)", marginBottom: 28 }}>
             {[
-              { id: "resources", label: "Resources", count: project.resources },
-              { id: "revision", label: "Revision", count: project.stars },
+              { id: "resources", label: "Resources", count: resources.length },
+              { id: "revision", label: "Revision", count: 0 },
               { id: "lists", label: "Lists", count: 0 },
             ].map((t) => {
               const active = tab === t.id;
@@ -66,52 +101,11 @@ export function ProjectView({ projectId, onOpenResource, onUpload }: Props) {
           <div style={{ padding: "0 56px 80px" }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24 }}>
               {resources.map((r) => (
-                <button
-                  key={r.id}
-                  onClick={() => r.status === "ready" && onOpenResource(r.id)}
-                  style={{
-                    background: "var(--panel)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 8,
-                    padding: 16,
-                    aspectRatio: "4 / 3",
-                    cursor: r.status === "ready" ? "pointer" : "default",
-                    fontFamily: "inherit",
-                    textAlign: "left",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8,
-                    opacity: r.status === "ready" ? 1 : 0.6,
-                  }}
-                >
-                  <span className="mono" style={{ fontSize: 10, color: "var(--muted-2)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                    {r.type}
-                  </span>
-                  <span style={{ flex: 1, fontSize: 14, color: "var(--ink)", fontWeight: 500, lineHeight: 1.3 }}>{r.title}</span>
-                  <span className="mono" style={{ fontSize: 10.5, color: r.status === "ready" ? "var(--muted)" : "var(--accent)" }}>
-                    {r.status === "ready" ? r.hint : `· ${r.hint}`}
-                  </span>
-                </button>
+                <ResourceTile key={r.id} resource={r} onClick={() => r.ingestion_status === "ready" && onOpenResource(r.id)} />
               ))}
-              <button
-                onClick={onUpload}
-                style={{
-                  border: "1.5px dashed var(--border)",
-                  borderRadius: 8,
-                  background: "transparent",
-                  aspectRatio: "4 / 3",
-                  cursor: "pointer",
-                  color: "var(--muted)",
-                  fontFamily: "inherit",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 10,
-                }}
-              >
+              <button onClick={() => setShowUpload(true)} style={dashedBtn}>
                 <I.plus width={18} height={18} />
-                <span style={{ fontSize: 12.5 }}>Add resource</span>
+                <span style={{ fontSize: 12.5 }}>Add PDF</span>
               </button>
             </div>
           </div>
@@ -128,7 +122,68 @@ export function ProjectView({ projectId, onOpenResource, onUpload }: Props) {
           </div>
         )}
       </div>
+
+      {showUpload && <UploadModal projectId={projectId} onClose={() => setShowUpload(false)} />}
     </div>
+  );
+}
+
+function ResourceTile({ resource: r, onClick }: { resource: Resource; onClick: () => void }) {
+  const ready = r.ingestion_status === "ready";
+  const failed = r.ingestion_status === "failed";
+  const pages = r.metadata?.page_count;
+
+  const statusLabel = ready
+    ? pages
+      ? `${pages} pages`
+      : "ready"
+    : failed
+    ? "failed"
+    : r.ingestion_status === "processing"
+    ? "extracting…"
+    : "queued";
+
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        background: "var(--panel)",
+        border: "1px solid var(--border)",
+        borderRadius: 8,
+        padding: 16,
+        aspectRatio: "4 / 3",
+        cursor: ready ? "pointer" : "default",
+        fontFamily: "inherit",
+        textAlign: "left",
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+        opacity: ready ? 1 : 0.75,
+      }}
+      title={failed ? r.ingestion_error ?? "ingestion failed" : undefined}
+    >
+      <span
+        className="mono"
+        style={{
+          fontSize: 10,
+          color: "var(--muted-2)",
+          textTransform: "uppercase",
+          letterSpacing: "0.06em",
+        }}
+      >
+        {r.type}
+      </span>
+      <span style={{ flex: 1, fontSize: 14, color: "var(--ink)", fontWeight: 500, lineHeight: 1.3 }}>{r.title}</span>
+      <span
+        className="mono"
+        style={{
+          fontSize: 10.5,
+          color: failed ? "#B83232" : ready ? "var(--muted)" : "var(--accent)",
+        }}
+      >
+        {statusLabel}
+      </span>
+    </button>
   );
 }
 
@@ -145,4 +200,19 @@ const btnPrimary: React.CSSProperties = {
   fontSize: 13,
   fontWeight: 500,
   fontFamily: "inherit",
+};
+
+const dashedBtn: React.CSSProperties = {
+  border: "1.5px dashed var(--border)",
+  borderRadius: 8,
+  background: "transparent",
+  aspectRatio: "4 / 3",
+  cursor: "pointer",
+  color: "var(--muted)",
+  fontFamily: "inherit",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 10,
 };

@@ -30,13 +30,12 @@ export default function App() {
       />
       <main style={{ flex: 1, display: "flex", minHeight: 0 }}>
         {route.view === "home" && (
-          <HomeView onOpenProject={(id) => setRoute({ view: "project", projectId: id })} onUpload={() => {}} />
+          <HomeView onOpenProject={(id) => setRoute({ view: "project", projectId: id })} />
         )}
         {route.view === "project" && (
           <ProjectView
             projectId={route.projectId}
             onOpenResource={(id) => setRoute({ view: "resource", resourceId: id })}
-            onUpload={() => {}}
           />
         )}
         {route.view === "resource" && <ResourceView resourceId={route.resourceId} />}
