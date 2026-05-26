@@ -39,13 +39,13 @@ Status legend: `⬜ not started · 🟡 in progress · ✅ done · ⏭ deferred`
 
 **Goal:** Real persistence. Upload a PDF, see it in the viewer.
 
-- [ ] Alembic migration: `projects`, `resources`, `resource_content` (PRD §9)
-- [ ] SQLAlchemy models in `backend/app/db/models.py`
-- [ ] Endpoints: `POST/GET/PATCH/DELETE /api/projects`, `POST /api/projects/:id/resources`, `GET /api/resources/:id`, `GET /api/resources/:id/file`
-- [ ] Ingestion: `pymupdf` → `resource_content` rows with `anchor_json = {page: N}`; status state machine via `BackgroundTasks`
-- [ ] File storage at `/data/resources/{resource_id}/`
-- [ ] Frontend: React Query, swap mocks in `HomeView` / `ProjectView`, real `UploadModal`
-- [ ] `PdfViewer` with `react-pdf`
+- [x] Alembic migration: `projects`, `resources`, `resource_content` (PRD §9)
+- [x] SQLAlchemy models in `backend/app/db/models.py`
+- [x] Endpoints: `POST/GET/PATCH/DELETE /api/projects`, `POST /api/projects/:id/resources`, `GET /api/resources/:id`, `GET /api/resources/:id/file`
+- [x] Ingestion: `pymupdf` → `resource_content` rows with `anchor_json = {page: N}`; status state machine via `BackgroundTasks`
+- [x] File storage at `/data/resources/{resource_id}/`
+- [x] Frontend: React Query, swap mocks in `HomeView` / `ProjectView`, real `UploadModal`
+- [x] `PdfViewer` with `react-pdf`
 
 **Verify:** Create project → upload PDF → status `ready` → opening renders the actual file with page navigation; survives `docker compose down && up`.
 
