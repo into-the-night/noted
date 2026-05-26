@@ -1,0 +1,173 @@
+:root {
+  --font-sans: "Geist", ui-sans-serif, -apple-system, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", monospace;
+  --font-display: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --display-weight: 600;
+  --display-tracking: -0.025em;
+  --display-line: 1.05;
+
+  --r-sm: 4px;
+  --r-md: 7px;
+  --r-lg: 12px;
+
+  --shadow-sm: 0 1px 2px rgba(10, 10, 10, 0.04);
+  --shadow-md: 0 6px 24px -8px rgba(10, 10, 10, 0.1);
+  --shadow-lg: 0 24px 64px -16px rgba(10, 10, 10, 0.22);
+}
+
+/* MODE — light (default, white surface) */
+[data-theme="light"] {
+  --bg: #FFFFFF;
+  --panel: #FFFFFF;
+  --panel-2: #F5F7FB;
+  --panel-sunk: #EBEFF6;
+  --border: #DCE3EE;
+  --border-soft: #E8ECF3;
+  --ink: #0B1B33;
+  --ink-soft: #1F2F4D;
+  --muted: #5B6A82;
+  --muted-2: #9AA6B8;
+  --gold: #B88318;
+  --grid-line: rgba(11, 27, 51, 0.05);
+  --dot: rgba(11, 27, 51, 0.10);
+  --hair-line: rgba(11, 27, 51, 0.06);
+}
+
+[data-theme="dark"] {
+  --bg: #0A1426;
+  --panel: #0F1C33;
+  --panel-2: #142441;
+  --panel-sunk: #1B2D52;
+  --border: #213663;
+  --border-soft: #1A2A4F;
+  --ink: #F4F7FC;
+  --ink-soft: #C9D3E5;
+  --muted: #8492AC;
+  --muted-2: #56627A;
+  --gold: #E4B547;
+  --grid-line: rgba(255, 255, 255, 0.05);
+  --dot: rgba(255, 255, 255, 0.10);
+  --hair-line: rgba(255, 255, 255, 0.06);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 24px -8px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 24px 64px -16px rgba(0, 0, 0, 0.8);
+}
+
+/* PALETTE — navy (default) */
+[data-palette="navy"] {
+  --accent: #1E3A8A;
+  --accent-hov: #15296A;
+  --accent-soft: rgba(30, 58, 138, 0.18);
+  --accent-tint: rgba(30, 58, 138, 0.08);
+  --accent-fg: #FFFFFF;
+}
+[data-theme="dark"][data-palette="navy"] {
+  --accent: #6F8DFB;
+  --accent-hov: #92A8FC;
+  --accent-soft: rgba(111, 141, 251, 0.22);
+  --accent-tint: rgba(111, 141, 251, 0.10);
+  --accent-fg: #0A1426;
+}
+
+/* TYPE SYSTEM — Geist */
+[data-font="geist"] {
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-display: "Geist", ui-sans-serif, sans-serif;
+}
+
+[data-radius="soft"] {
+  --r-sm: 4px;
+  --r-md: 7px;
+  --r-lg: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+#root {
+  height: 100vh;
+  width: 100vw;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(91, 106, 130, 0.25);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(91, 106, 130, 0.45);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.mono {
+  font-family: var(--font-mono) !important;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking);
+  line-height: var(--display-line);
+}
+
+kbd {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-bottom-width: 1.5px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--ink-soft);
+}
+
+/* BACKGROUND — dotted (default) */
+[data-bg="plain"] body {
+  background-color: var(--bg);
+  background-image: none;
+}
+[data-bg="paper"] body {
+  background-color: var(--bg);
+  background-image: radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 1.4px);
+  background-size: 14px 14px;
+  background-attachment: fixed;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.view-fade {
+  animation: fadeIn 220ms ease both;
+}
