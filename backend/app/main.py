@@ -2,8 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
+from app.api import chats as chats_api
 from app.api import projects as projects_api
 from app.api import resources as resources_api
+from app.api import settings as settings_api
 from app.db.base import engine
 
 app = FastAPI(title="Noted", version="0.0.1")
@@ -31,3 +33,5 @@ def health():
 
 app.include_router(projects_api.router)
 app.include_router(resources_api.router)
+app.include_router(chats_api.router)
+app.include_router(settings_api.router)

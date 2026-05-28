@@ -6,7 +6,12 @@ import { I } from "../lib/icons";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
 
-type Props = { fileUrl: string; title: string };
+type Props = {
+  fileUrl: string;
+  title: string;
+  page?: number;
+  onPageChange?: (page: number) => void;
+};
 
 const PRELOAD_AHEAD = 2;
 const PRELOAD_BEHIND = 1;
@@ -16,10 +21,19 @@ const ZOOM_STEP = 0.25;
 const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 4;
 
-export function PdfViewer({ fileUrl, title }: Props) {
+export function PdfViewer({ fileUrl, title, page: pageProp, onPageChange }: Props) {
   const [numPages, setNumPages] = useState<number | null>(null);
-  const [page, setPage] = useState(1);
+  const [pageState, setPageState] = useState(1);
+  const page = pageProp ?? pageState;
+  const setPage = (n: number) => {
+    setPageState(n);
+    onPageChange?.(n);
+  };
   const [inputVal, setInputVal] = useState("1");
+
+  useEffect(() => {
+    setInputVal(String(page));
+  }, [page]);
   const [baseWidth, setBaseWidth] = useState<number | null>(null);
   const [scale, setScale] = useState(1);
   const [isPanning, setIsPanning] = useState(false);

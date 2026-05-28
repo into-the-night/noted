@@ -1,30 +1,36 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import { PdfViewer } from "../components/PdfViewer";
+import { ChatPanel } from "../components/ChatPanel";
+import { SettingsModal } from "../components/SettingsModal";
 
 export function ResourceView({ resourceId }: { resourceId: string }) {
   const { data: resource, isLoading } = useQuery({
     queryKey: ["resource", resourceId],
     queryFn: () => api.getResource(resourceId),
   });
+  const [page, setPage] = useState(1);
+  const [showSettings, setShowSettings] = useState(false);
+
+  const ready = resource?.ingestion_status === "ready";
 
   return (
     <div className="view-fade" style={{ flex: 1, display: "flex", minHeight: 0 }}>
       <div style={{ flex: "1 1 60%", minWidth: 0, display: "flex", flexDirection: "column" }}>
         {isLoading || !resource ? (
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)" }}>
-            Loading…
-          </div>
-        ) : resource.ingestion_status !== "ready" ? (
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)" }}>
-            Resource is {resource.ingestion_status}…
-          </div>
+          <div style={center}>Loading…</div>
+        ) : !ready ? (
+          <div style={center}>Resource is {resource.ingestion_status}…</div>
         ) : resource.type === "pdf" ? (
-          <PdfViewer fileUrl={api.resourceFileUrl(resource.id)} title={resource.title} />
+          <PdfViewer
+            fileUrl={api.resourceFileUrl(resource.id)}
+            title={resource.title}
+            page={page}
+            onPageChange={setPage}
+          />
         ) : (
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)" }}>
-            Viewer for {resource.type} arrives in a later stage.
-          </div>
+          <div style={center}>Viewer for {resource.type} arrives in a later stage.</div>
         )}
       </div>
 
@@ -39,13 +45,30 @@ export function ResourceView({ resourceId }: { resourceId: string }) {
           flexDirection: "column",
         }}
       >
-        <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--border-soft)", fontSize: 13, fontWeight: 500 }}>
-          Chat
-        </div>
-        <div style={{ flex: 1, padding: 18, color: "var(--muted)", fontSize: 13.5, lineHeight: 1.5 }}>
-          Chat (Gemini) wires up in Stage 2. The pin model lands in Stage 3.
-        </div>
+        {ready && resource ? (
+          <ChatPanel
+            resourceId={resource.id}
+            resourceType={resource.type}
+            currentPage={page}
+            onJumpToPage={setPage}
+            onOpenSettings={() => setShowSettings(true)}
+          />
+        ) : (
+          <div style={{ padding: 18, color: "var(--muted)", fontSize: 13.5 }}>
+            Chat unlocks once the resource is ready.
+          </div>
+        )}
       </div>
+
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </div>
   );
 }
+
+const center: React.CSSProperties = {
+  flex: 1,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "var(--muted)",
+};
