@@ -1,6 +1,6 @@
 # Noted
 
-Self-hosted study workspace. See `PRD.md` for the spec and `/home/abhay/.claude/plans/okay-can-you-use-optimized-meadow.md` for the staged build plan.
+Self-hosted study workspace.
 
 ## Run (Stage 0)
 
